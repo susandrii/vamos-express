@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0e1b2c" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Vamos Express — Book a Ride</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0e1b2c;
+    --ink-2:#16283f;
+    --paper:#f6f3ec;
+    --card:#ffffff;
+    --amber:#e8a23a;
+    --amber-deep:#c9831f;
+    --sky:#5b86b5;
+    --line:#e6e0d4;
+    --muted:#6b7280;
+    --ok:#1f8a55;
+    --shadow:0 18px 50px -20px rgba(14,27,44,.45);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;display:flex;justify-content:center}
+  .app{width:100%;max-width:460px;min-height:100vh;background:var(--paper);position:relative;overflow:hidden}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;background:linear-gradient(165deg,#1a3050 0%,#0e1b2c 78%);
+    color:#fff;padding:calc(env(safe-area-inset-top) + 26px) 24px 70px;overflow:hidden;
+  }
+  .hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:46px;
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='46' viewBox='0 0 460 46' preserveAspectRatio='none'><path d='M0 46 L0 30 L60 8 L120 26 L185 4 L250 24 L320 6 L390 22 L460 10 L460 46 Z' fill='%23f6f3ec'/></svg>") bottom/cover no-repeat;
+  }
+  .brandline{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.02em;font-size:14px;opacity:.9}
+  .brandline .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 4px rgba(232,162,58,.18)}
+  .hero h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:34px;line-height:1.02;margin:14px 0 8px;letter-spacing:-.02em}
+  .hero h1 span{color:var(--amber)}
+  .hero p{font-size:15px;opacity:.78;max-width:30ch}
+  .plane{position:absolute;top:28px;right:22px;font-size:30px;transform:rotate(-12deg);opacity:.85}
+
+  /* ---------- SHELL ---------- */
+  .shell{padding:0 18px 40px;margin-top:-34px;position:relative;z-index:2}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .seg button{appearance:none;cursor:pointer;border:1.5px solid var(--line);background:#fbfaf6;border-radius:14px;padding:14px 10px;text-align:left;transition:.18s;font-family:inherit}
+  .seg button .ico{font-size:20px;display:block;margin-bottom:6px}
+  .seg button .t{font-weight:700;font-size:14.5px;color:var(--ink)}
+  .seg button .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .seg button.active{border-color:var(--ink);background:var(--ink);}
+  .seg button.active .t,.seg button.active .s{color:#fff}
+  .seg button.active .s{opacity:.75}
+
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin:0 0 6px 2px;letter-spacing:.01em}
+  .field{margin-bottom:14px}
+  input,select,textarea{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fbfaf6;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;transition:.15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--amber);background:#fff;box-shadow:0 0 0 3px rgba(232,162,58,.15)}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:5px;margin-left:2px}
+  .hidden{display:none !important}
+
+  /* ---------- ESTIMATE ---------- */
+  .est{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(100deg,#fff7e9,#fdeccb);border:1.5px solid #f0d7a4;border-radius:14px;padding:14px 16px;margin:4px 0 18px}
+  .est .lbl{font-size:12px;color:var(--amber-deep);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .est .amt{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1}
+  .est .sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+  .cta{width:100%;border:none;cursor:pointer;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;color:#0e1b2c;background:linear-gradient(180deg,var(--amber),var(--amber-deep));border-radius:14px;padding:16px;letter-spacing:.01em;box-shadow:0 12px 26px -10px rgba(201,131,31,.7);transition:.15s}
+  .cta:active{transform:translateY(1px)}
+  .cta[disabled]{filter:grayscale(.5) opacity(.6);box-shadow:none;cursor:not-allowed}
+
+  .foot{text-align:center;font-size:12px;color:var(--muted);padding:18px 24px 30px;line-height:1.5}
+  .foot b{color:var(--ink-2)}
+
+  .err{border-color:#d9534f !important;background:#fdf3f2 !important}
+
+  /* ---------- CONFIRMATION ---------- */
+  .confirm{padding:0 18px 30px}
+  .badge{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(180deg,#27a866,#1f8a55);margin:18px auto 14px;box-shadow:0 14px 30px -10px rgba(31,138,85,.6);animation:pop .5s cubic-bezier(.2,1.3,.4,1)}
+  @keyframes pop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
+  .confirm h2{font-family:"Bricolage Grotesque",sans-serif;text-align:center;font-size:24px;font-weight:800;margin-bottom:4px}
+  .confirm .lead{text-align:center;color:var(--muted);font-size:14px;margin-bottom:18px}
+  .ticket{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .ticket .top{background:var(--ink);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+  .ticket .top .rt{font-weight:700;font-size:15px}
+  .ticket .top .px{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:20px;color:var(--amber)}
+  .ticket .body{padding:6px 18px 16px}
+  .trow{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .trow:last-child{border-bottom:none}
+  .trow .k{color:var(--muted);font-weight:600}
+  .trow .v{text-align:right;font-weight:600;color:var(--ink)}
+  .note{background:#f1f5fb;border:1px solid #dce6f3;border-radius:12px;padding:13px 14px;font-size:13px;color:var(--ink-2);margin-top:16px;line-height:1.55}
+  .note b{color:var(--ink)}
+  .link{display:block;text-align:center;margin-top:18px;color:var(--amber-deep);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer}
+  .sig{text-align:center;margin-top:22px;font-size:13px;color:var(--muted)}
+  .sig b{font-family:"Bricolage Grotesque",sans-serif;color:var(--ink);font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- VIEW: FORM -->
+  <div id="view-form">
+    <header class="hero">
+      <div class="plane">✈️</div>
+      <div class="brandline"><span class="dot"></span> VAMOS EXPRESS</div>
+      <h1>You fly,<br><span>we drive.</span></h1>
+      <p>Door-to-door airport transfers between the Foothills and YYC Calgary.</p>
+    </header>
+
+    <div class="shell">
+      <div class="card">
+
+        <div class="seg" id="seg">
+          <button type="button" data-dir="departure" class="active">
+            <span class="ico">🚐</span>
+            <span class="t">To the airport</span>
+            <span class="s">Pickup → YYC</span>
+          </button>
+          <button type="button" data-dir="arrival">
+            <span class="ico">🛬</span>
+            <span class="t">From the airport</span>
+            <span class="s">YYC → drop-off</span>
+          </button>
+        </div>
+
+        <div class="field">
+          <label>Full name</label>
+          <input id="name" type="text" placeholder="e.g. Roger Mireault" autocomplete="name" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Phone</label>
+            <input id="phone" type="tel" placeholder="+1 403 ..." autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label>Passengers</label>
+            <select id="pax">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="you@email.com" autocomplete="email" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Date</label>
+            <input id="date" type="date" />
+          </div>
+          <div class="field">
+            <label id="timeLbl">Pickup time</label>
+            <input id="time" type="time" />
+          </div>
+        </div>
+
+        <!-- Arrival-only: flight -->
+        <div class="field hidden" id="flightField">
+          <label>Flight number</label>
+          <input id="flight" type="text" placeholder="e.g. WS1811" />
+          <div class="hint">I track your flight and will be there even if it's delayed.</div>
+        </div>
+
+        <div class="field">
+          <label>Service area</label>
+          <select id="area">
+            <option value="Okotoks" data-base="75">Okotoks / Foothills County</option>
+            <option value="High River" data-base="90">High River</option>
+            <option value="Diamond Valley" data-base="95">Diamond Valley / Black Diamond</option>
+            <option value="Canmore" data-base="230">Canmore</option>
+            <option value="Banff" data-base="260">Banff</option>
+            <option value="Other" data-base="0">Other — request a quote</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label id="addrLbl">Pickup address</label>
+          <input id="address" type="text" placeholder="Street address" autocomplete="street-address" />
+        </div>
+
+        <div class="field">
+          <label>Notes (optional)</label>
+          <textarea id="notes" placeholder="Child seat, extra luggage, etc."></textarea>
+        </div>
+
+        <div class="est" id="est">
+          <div>
+            <div class="lbl">Estimated fare</div>
+            <div class="sub">+ GST · pay cash or card after the trip</div>
+          </div>
+          <div style="text-align:right">
+            <div class="amt" id="estAmt">$75</div>
+          </div>
+        </div>
+
+        <button class="cta" id="submit">Request booking</button>
+        <div id="formErr" class="hidden" style="margin-top:12px;text-align:center;color:#c0392b;font-size:13.5px;font-weight:600"></div>
+      </div>
+
+      <div class="foot">
+        No prepayment needed. You'll get an SMS the day before and 1 hour before pickup.<br>
+        Questions? <b>+1 403-619-7769</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: CONFIRMATION -->
+  <div id="view-confirm" class="hidden">
+    <div class="confirm">
+      <div class="badge">✓</div>
+      <h2>Booking received!</h2>
+      <p class="lead" id="confLead">Thanks, your ride is being confirmed.</p>
+
+      <div class="ticket">
+        <div class="top">
+          <div class="rt" id="tRoute">Okotoks → YYC</div>
+          <div class="px" id="tPrice">$75 + GST</div>
+        </div>
+        <div class="body" id="tBody"></div>
+      </div>
+
+      <div class="note" id="tNote"></div>
+
+      <div class="sig">
+        <b>Andrii · Vamos Express</b><br>You fly — we drive! ✈️
+      </div>
+
+      <a class="link" id="again">← Make another booking</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  // ---- Supabase (publishable key is meant to live in client code) ----
+  var SUPABASE_URL = "https://vebcqyepcxvsiddzzmtf.supabase.co";
+  var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYmNxeWVwY3h2c2lkZHp6bXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzA0NDAsImV4cCI6MjA5NTY0NjQ0MH0.x9C23kRSQ9n9L1CV_nai-tLqEk5v0ecUL-Qj65pLWjg";
+  var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var dir = "departure";
+  var $ = function(id){return document.getElementById(id);};
+
+  // default date = tomorrow
+  var t = new Date(); t.setDate(t.getDate()+1);
+  $("date").value = t.toISOString().slice(0,10);
+
+  // ---- direction toggle ----
+  document.querySelectorAll("#seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#seg button").forEach(function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      dir = b.dataset.dir;
+      applyDir();
+    });
+  });
+
+  function applyDir(){
+    var arrival = dir === "arrival";
+    $("flightField").classList.toggle("hidden", !arrival);
+    $("timeLbl").textContent = arrival ? "Landing time" : "Pickup time";
+    $("addrLbl").textContent = arrival ? "Drop-off address" : "Pickup address";
+  }
+
+  // ---- live estimate ----
+  function updateEst(){
+    var opt = $("area").options[$("area").selectedIndex];
+    var base = parseInt(opt.dataset.base, 10) || 0;
+    var pax = parseInt($("pax").value, 10) || 1;
+    if(base === 0){ $("estAmt").textContent = "Quote"; return; }
+    var price = base + (pax > 3 ? (pax-3)*15 : 0); // small surcharge for 4+ pax (editable)
+    $("estAmt").textContent = "$" + price;
+  }
+  $("area").addEventListener("change", updateEst);
+  $("pax").addEventListener("change", updateEst);
+  updateEst();
+
+  // ---- validation ----
+  function need(ids){
+    var ok = true;
+    ids.forEach(function(id){
+      var el = $(id);
+      if(!el.value.trim()){ el.classList.add("err"); ok=false; }
+      else el.classList.remove("err");
+    });
+    return ok;
+  }
+
+  // ---- submit ----
+  $("submit").addEventListener("click", async function(){
+    var req = ["name","phone","date","time","address"];
+    if(dir === "arrival") req.push("flight");
+    if(!need(req)){ return; }
+
+    var arrival = dir === "arrival";
+    var opt = $("area").options[$("area").selectedIndex];
+    var base = parseInt(opt.dataset.base,10)||0;
+    var pax = parseInt($("pax").value,10)||1;
+    var price = base ? base + (pax>3?(pax-3)*15:0) : null;
+
+    var d = new Date($("date").value + "T" + $("time").value);
+
+    // ---- save to Supabase ----
+    var btn = $("submit"), err = $("formErr");
+    err.classList.add("hidden");
+    btn.disabled = true; btn.textContent = "Saving…";
+
+    var payload = {
+      direction: dir,
+      customer_name: $("name").value.trim(),
+      phone: $("phone").value.trim(),
+      email: $("email").value.trim() || null,
+      pax: pax,
+      area: $("area").value,
+      address: $("address").value.trim(),
+      flight: arrival ? $("flight").value.trim().toUpperCase() : null,
+      pickup_at: d.toISOString(),
+      notes: $("notes").value.trim() || null,
+      rate: price,
+      status: "new"
+    };
+
+    var res = await db.from("bookings").insert(payload);
+    btn.disabled = false; btn.textContent = "Request booking";
+
+    if(res.error){
+      err.textContent = "Error: " + (res.error.message || JSON.stringify(res.error));
+      err.classList.remove("hidden");
+      console.error("Supabase insert error:", JSON.stringify(res.error));
+      return;
+    }
+
+    // ---- success: build confirmation ----
+    var dateStr = d.toLocaleDateString("en-CA",{month:"long",day:"numeric"});
+    var timeStr = d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+
+    var route = arrival ? "YYC → " + $("area").value : $("area").value + " → YYC";
+    $("tRoute").textContent = route;
+    $("tPrice").textContent = price ? ("$"+price+" + GST") : "Quote on request";
+    $("confLead").textContent = "Hi " + $("name").value.split(" ")[0] + "! I'll confirm shortly. Here are your details:";
+
+    var rows = [
+      ["When", dateStr + " · " + timeStr],
+      ["Passengers", pax >= 5 ? "5+" : pax],
+      [arrival ? "Drop-off" : "Pickup", $("address").value],
+    ];
+    if(arrival) rows.splice(1,0,["Flight", $("flight").value.toUpperCase()]);
+    if($("notes").value.trim()) rows.push(["Notes", $("notes").value.trim()]);
+    rows.push(["Payment", "Cash or card after trip"]);
+
+    $("tBody").innerHTML = rows.map(function(r){
+      return '<div class="trow"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';
+    }).join("");
+
+    $("tNote").innerHTML = arrival
+      ? "<b>📍 Airport pickup:</b> YYC Arrivals, Door 17. I track flight <b>"+$("flight").value.toUpperCase()+"</b> and will be there even if it's delayed."
+      : "<b>🚐 Reminder:</b> I'll text you the day before and again 1 hour before pickup. No prepayment needed.";
+
+    $("view-form").classList.add("hidden");
+    $("view-confirm").classList.remove("hidden");
+    window.scrollTo(0,0);
+  });
+
+  $("again").addEventListener("click", function(){
+    $("view-confirm").classList.add("hidden");
+    $("view-form").classList.remove("hidden");
+    window.scrollTo(0,0);
+  });
+
+  applyDir();
+})();
+</script>
+</body>
+</html>

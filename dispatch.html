@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0e1b2c" />
+<title>Vamos Express — Dispatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0e1b2c; --ink-2:#16283f; --paper:#eef1f4; --card:#fff;
+    --amber:#e8a23a; --amber-deep:#c9831f; --line:#e3e7ec; --muted:#6b7785;
+    --new:#e8a23a; --assigned:#3b7dd8; --enroute:#7c5cd0; --done:#1f8a55;
+    --shadow:0 10px 30px -16px rgba(14,27,44,.4); --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;justify-content:center}
+  .app{width:100%;max-width:480px;min-height:100vh;background:var(--paper)}
+  .hidden{display:none !important}
+
+  /* ---- LOGIN ---- */
+  .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:24px;background:linear-gradient(165deg,#1a3050,#0e1b2c)}
+  .login .brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:600;font-size:14px;letter-spacing:.03em;margin-bottom:6px;justify-content:center}
+  .login .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+  .login h1{color:#fff;font-family:"Bricolage Grotesque";font-weight:800;font-size:30px;text-align:center;margin-bottom:24px;letter-spacing:-.02em}
+  .login h1 span{color:var(--amber)}
+  .lcard{background:#fff;border-radius:18px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.5)}
+  .lcard label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin:0 0 6px 2px}
+  .lcard input{width:100%;font-family:inherit;font-size:15px;border:1.5px solid var(--line);background:#fbfaf6;border-radius:12px;padding:13px 14px;margin-bottom:14px}
+  .lcard input:focus{outline:none;border-color:var(--amber);background:#fff;box-shadow:0 0 0 3px rgba(232,162,58,.15)}
+  .lbtn{width:100%;border:none;cursor:pointer;font-family:"Bricolage Grotesque";font-weight:700;font-size:16px;color:#0e1b2c;background:linear-gradient(180deg,var(--amber),var(--amber-deep));border-radius:13px;padding:15px;margin-top:4px}
+  .lbtn:active{transform:translateY(1px)}
+  .lerr{color:#c0392b;font-size:13.5px;font-weight:600;text-align:center;margin-top:14px}
+
+  /* ---- HEADER ---- */
+  header{background:linear-gradient(165deg,#1a3050,#0e1b2c);color:#fff;padding:calc(env(safe-area-inset-top) + 16px) 16px 16px}
+  .htop{display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;letter-spacing:.03em;opacity:.92}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+  .hbtns{display:flex;gap:8px}
+  .iconbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;border-radius:9px;padding:7px 11px}
+  .whoami{margin-top:12px;font-size:13px;opacity:.8}
+  .whoami b{color:var(--amber);font-weight:700;text-transform:capitalize}
+
+  .wrap{padding:16px 14px 40px}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 10px;text-align:center;box-shadow:var(--shadow)}
+  .stat .n{font-family:"Bricolage Grotesque";font-weight:800;font-size:24px;line-height:1}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600}
+  .stat.acc .n{color:var(--amber-deep)}
+
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .b{display:inline-block;min-width:18px;margin-left:5px;font-size:11px;background:rgba(0,0,0,.12);border-radius:8px;padding:0 5px}
+  .chip.active .b{background:rgba(255,255,255,.22)}
+
+  .bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px;margin-bottom:12px;position:relative;overflow:hidden;animation:rise .3s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .bk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .bk[data-s="new"]::before{background:var(--new)} .bk[data-s="assigned"]::before{background:var(--assigned)}
+  .bk[data-s="enroute"]::before{background:var(--enroute)} .bk[data-s="done"]::before{background:var(--done)}
+  .bk .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+  .bk .route{font-family:"Bricolage Grotesque";font-weight:700;font-size:16px;letter-spacing:-.01em}
+  .bk .who{font-size:13px;color:var(--muted);margin-top:1px}
+  .bk .who a{color:var(--assigned);text-decoration:none}
+  .badge{flex:0 0 auto;font-size:11px;font-weight:700;padding:5px 9px;border-radius:8px;white-space:nowrap}
+  .badge[data-s="new"]{background:#fdf0db;color:var(--amber-deep)}
+  .badge[data-s="assigned"]{background:#e6effb;color:var(--assigned)}
+  .badge[data-s="enroute"]{background:#efeafa;color:var(--enroute)}
+  .badge[data-s="done"]{background:#e3f5ec;color:var(--done)}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2);margin:8px 0 4px}
+  .meta span{display:inline-flex;align-items:center;gap:5px}
+  .meta .ic{opacity:.6}
+  .addr{font-size:13px;color:var(--muted);margin-top:2px}
+  .price{font-family:"Bricolage Grotesque";font-weight:800;color:var(--ink)}
+  .actions{display:flex;align-items:center;gap:8px;margin-top:13px;padding-top:13px;border-top:1px dashed var(--line)}
+  select.assign{flex:1;font-family:inherit;font-size:13.5px;font-weight:600;border:1.5px solid var(--line);background:#fbfaf6;border-radius:10px;padding:10px 11px;color:var(--ink)}
+  select.assign:focus{outline:none;border-color:var(--amber)}
+  .driverpill{flex:1;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+  .driverpill .av{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .btn{appearance:none;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;border-radius:10px;padding:10px 14px;white-space:nowrap}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),var(--amber-deep));color:#0e1b2c}
+  .btn.dark{background:var(--ink);color:#fff}
+  .btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+  .btn:active{transform:translateY(1px)}
+  .done-tag{display:inline-flex;align-items:center;gap:6px;color:var(--done);font-weight:700;font-size:13.5px}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:40px 20px}
+  .remwrap{margin-bottom:18px}
+  .remhead{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink);margin:0 2px 11px;text-transform:uppercase;letter-spacing:.04em}
+  .remhead .pill{background:var(--amber);color:#0e1b2c;border-radius:999px;font-size:12px;padding:2px 9px;font-weight:800}
+  .rem{background:#fff;border:1.5px solid #f0d7a4;border-left:4px solid var(--amber);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .rem.hour{border-color:#cfdcf3;border-left-color:var(--assigned)}
+  .rem .rtop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}
+  .rem .rname{font-weight:700;font-size:15px}
+  .rem .rkind{font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;background:#fdf0db;color:var(--amber-deep)}
+  .rem.hour .rkind{background:#e6effb;color:var(--assigned)}
+  .rem .rtext{font-size:13px;color:var(--ink-2);background:#f7f6f2;border-radius:10px;padding:11px 12px;white-space:pre-wrap;line-height:1.45;margin-bottom:11px}
+  .rem .sendbtn{display:block;text-align:center;text-decoration:none;font-family:"Bricolage Grotesque";font-weight:700;font-size:15px;color:#0e1b2c;background:linear-gradient(180deg,var(--amber),var(--amber-deep));border-radius:11px;padding:13px}
+  .rem .sendbtn:active{transform:translateY(1px)}
+  .secttl{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 2px 10px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LOGIN -->
+  <div id="view-login" class="login">
+    <div class="brand"><span class="dot"></span> VAMOS EXPRESS</div>
+    <h1>Dispatch <span>·</span> Вхід</h1>
+    <div class="lcard">
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="username" placeholder="andrii@sus.name" />
+      <label>Пароль</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <button class="lbtn" id="loginBtn">Увійти</button>
+      <div id="loginErr" class="lerr hidden"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="view-app" class="hidden">
+    <header>
+      <div class="htop">
+        <div class="brand"><span class="dot"></span> VAMOS EXPRESS</div>
+        <div class="hbtns">
+          <button class="iconbtn" id="refreshBtn">↻ Оновити</button>
+          <button class="iconbtn" id="logoutBtn">Вийти</button>
+        </div>
+      </div>
+      <div class="whoami" id="whoami"></div>
+    </header>
+    <div class="wrap">
+      <!-- DISPATCHER -->
+      <div id="area-dispatch" class="hidden">
+        <div id="reminders"></div>
+        <div class="stats">
+          <div class="stat acc"><div class="n" id="st-new">0</div><div class="l">Нові</div></div>
+          <div class="stat"><div class="n" id="st-assigned">0</div><div class="l">В роботі</div></div>
+          <div class="stat"><div class="n" id="st-done">0</div><div class="l">Виконано</div></div>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div id="d-list"></div>
+      </div>
+      <!-- DRIVER -->
+      <div id="area-driver" class="hidden">
+        <div class="secttl">Мої поїздки</div>
+        <div id="dr-list"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  var SUPABASE_URL = "https://vebcqyepcxvsiddzzmtf.supabase.co";
+  var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYmNxeWVwY3h2c2lkZHp6bXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzA0NDAsImV4cCI6MjA5NTY0NjQ0MH0.x9C23kRSQ9n9L1CV_nai-tLqEk5v0ecUL-Qj65pLWjg";
+  var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var $=function(id){return document.getElementById(id);};
+
+  var role=null, myDriverId=null, drivers=[], bookings=[], filter="all";
+  var labels={new:"Новий",assigned:"Призначено",enroute:"В дорозі",done:"Виконано"};
+
+  function initials(n){return (n||"?").split(" ").map(function(w){return w[0];}).slice(0,2).join("").toUpperCase();}
+  function fmt(iso){var d=new Date(iso);return d.toLocaleDateString("en-CA",{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+  function route(b){return b.direction==="arrival" ? ("YYC → "+(b.area||"")) : ((b.area||"")+" → YYC");}
+  function driverName(id){var d=drivers.filter(function(x){return x.id===id;})[0];return d?d.name:"—";}
+
+  // ---------- AUTH ----------
+  async function init(){
+    var s = await db.auth.getSession();
+    if(s.data.session){ await onLogin(s.data.session.user); }
+    else { $("view-login").classList.remove("hidden"); }
+  }
+
+  $("loginBtn").onclick = async function(){
+    var email=$("email").value.trim(), pw=$("password").value;
+    $("loginErr").classList.add("hidden");
+    $("loginBtn").textContent="Входжу…"; $("loginBtn").disabled=true;
+    var r = await db.auth.signInWithPassword({email:email,password:pw});
+    $("loginBtn").textContent="Увійти"; $("loginBtn").disabled=false;
+    if(r.error){ $("loginErr").textContent=r.error.message; $("loginErr").classList.remove("hidden"); return; }
+    await onLogin(r.data.user);
+  };
+
+  $("logoutBtn").onclick = async function(){
+    await db.auth.signOut();
+    location.reload();
+  };
+  $("refreshBtn").onclick = function(){ loadData(); };
+
+  async function onLogin(user){
+    var st = await db.from("staff").select("role,driver_id").eq("user_id",user.id).single();
+    if(st.error || !st.data){
+      $("loginErr").textContent="Цей акаунт не має ролі. Зверніться до диспетчера.";
+      $("loginErr").classList.remove("hidden");
+      await db.auth.signOut();
+      return;
+    }
+    role=st.data.role; myDriverId=st.data.driver_id;
+    $("view-login").classList.add("hidden");
+    $("view-app").classList.remove("hidden");
+    $("whoami").innerHTML = user.email + " · <b>"+(role==="dispatcher"?"Диспетчер":"Водій")+"</b>";
+    $("area-dispatch").classList.toggle("hidden", role!=="dispatcher");
+    $("area-driver").classList.toggle("hidden", role!=="driver");
+    await loadData();
+  }
+
+  // ---------- DATA ----------
+  async function loadData(){
+    var dr = await db.from("drivers").select("*").order("name");
+    drivers = dr.data || [];
+    var bk = await db.from("bookings").select("*").order("pickup_at");
+    bookings = bk.data || [];
+    render();
+  }
+
+  async function assign(id, driverId){
+    await db.from("bookings").update({driver_id:driverId, status:"assigned"}).eq("id",id);
+    await loadData();
+  }
+  async function unassign(id){
+    await db.from("bookings").update({driver_id:null, status:"new"}).eq("id",id);
+    await loadData();
+  }
+  async function setStatus(id, status){
+    await db.from("bookings").update({status:status}).eq("id",id);
+    await loadData();
+  }
+
+  // ---------- RENDER ----------
+  function metaHtml(b){
+    var m='<div class="meta">';
+    m+='<span><span class="ic">📅</span>'+fmt(b.pickup_at)+'</span>';
+    m+='<span><span class="ic">👥</span>'+b.pax+'</span>';
+    if(b.flight) m+='<span><span class="ic">✈️</span>'+b.flight+'</span>';
+    m+='<span class="price">'+(b.rate?("$"+b.rate+" +GST"):"Quote")+'</span>';
+    m+='</div><div class="addr">📍 '+(b.address||"")+'</div>';
+    return m;
+  }
+  function whoHtml(b){
+    return '<div class="who">'+b.customer_name+' · <a href="tel:'+b.phone+'">'+b.phone+'</a></div>';
+  }
+
+  function render(){
+    if(role==="dispatcher") renderDispatch();
+    else renderDriver();
+  }
+
+  // ---------- REMINDERS (one-tap SMS from your own number) ----------
+  function smsText(b, kind){
+    var first = (b.customer_name||"").split(" ")[0];
+    var time = new Date(b.pickup_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    if(kind==="day"){
+      return "Hi "+first+"! \u2705 Just a reminder for your trip tomorrow \u2014 I'll be at "+b.address+" at "+time+" for your pickup to YYC Airport. See you then! \ud83d\ude90\n\nAndrii | Vamos Express\nYou fly \u2014 we drive!";
+    }
+    return "Hi "+first+"! \ud83d\ude90 Quick reminder \u2014 I'll be at "+b.address+" at "+time+", about an hour from now, for your ride to YYC. See you soon!\n\nAndrii | Vamos Express";
+  }
+
+  function dueReminders(){
+    var now=Date.now(), out=[];
+    bookings.forEach(function(b){
+      if(b.direction!=="departure") return;
+      if(b.status==="done"||b.status==="cancelled") return;
+      var h=(new Date(b.pickup_at).getTime()-now)/3600000;
+      if(!b.reminder_hour_sent && h>0.15 && h<=1.25) out.push({b:b,kind:"hour"});
+      else if(!b.reminder_day_sent && h>1.25 && h<=24) out.push({b:b,kind:"day"});
+    });
+    return out;
+  }
+
+  function renderReminders(){
+    var due=dueReminders();
+    if(!due.length){ $("reminders").innerHTML=""; return; }
+    $("reminders").innerHTML =
+      '<div class="remwrap"><div class="remhead">\ud83d\udd14 \u041d\u0430\u0433\u0430\u0434\u0443\u0432\u0430\u043d\u043d\u044f \u0437\u0430\u0440\u0430\u0437 <span class="pill">'+due.length+'</span></div>'+
+      due.map(function(r){
+        var b=r.b, txt=smsText(b,r.kind);
+        var link="sms:"+(b.phone||"")+"?&body="+encodeURIComponent(txt);
+        var kindLbl=r.kind==="day"?"\u0417\u0430 \u0434\u0435\u043d\u044c":"\u0417\u0430 \u0433\u043e\u0434\u0438\u043d\u0443";
+        var safe=txt.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+        return '<div class="rem '+r.kind+'"><div class="rtop"><span class="rname">'+b.customer_name+'</span>'+
+          '<span class="rkind">'+kindLbl+'</span></div>'+
+          '<div class="rtext">'+safe+'</div>'+
+          '<a class="sendbtn" href="'+link+'" data-sent="'+b.id+'" data-kind="'+r.kind+'">\u2709\ufe0f \u041d\u0430\u0434\u0456\u0441\u043b\u0430\u0442\u0438 SMS</a></div>';
+      }).join("")+'</div>';
+    document.querySelectorAll("#reminders .sendbtn").forEach(function(a){
+      a.addEventListener("click", function(){
+        var field = a.dataset.kind==="day" ? "reminder_day_sent" : "reminder_hour_sent";
+        var upd={}; upd[field]=true;
+        db.from("bookings").update(upd).eq("id",a.dataset.sent).then(function(){ setTimeout(loadData, 400); });
+      });
+    });
+  }
+
+  function renderDispatch(){
+    renderReminders();
+    $("st-new").textContent = bookings.filter(function(b){return b.status==="new";}).length;
+    $("st-assigned").textContent = bookings.filter(function(b){return b.status==="assigned"||b.status==="enroute";}).length;
+    $("st-done").textContent = bookings.filter(function(b){return b.status==="done";}).length;
+
+    var defs=[["all","Усі"],["new","Нові"],["assigned","Призначені"],["enroute","В дорозі"],["done","Виконані"]];
+    $("chips").innerHTML = defs.map(function(d){
+      var cnt = d[0]==="all" ? bookings.length : bookings.filter(function(b){return b.status===d[0];}).length;
+      return '<div class="chip '+(filter===d[0]?"active":"")+'" data-f="'+d[0]+'">'+d[1]+'<span class="b">'+cnt+'</span></div>';
+    }).join("");
+    document.querySelectorAll("#chips .chip").forEach(function(c){
+      c.onclick=function(){filter=c.dataset.f;renderDispatch();};
+    });
+
+    var list = bookings.filter(function(b){return filter==="all"||b.status===filter;});
+    if(!list.length){$("d-list").innerHTML='<div class="empty">Немає замовлень тут</div>';return;}
+    $("d-list").innerHTML = list.map(function(b){
+      var ctrl;
+      if(b.status==="new"){
+        ctrl='<select class="assign" data-id="'+b.id+'"><option value="">— Призначити водія —</option>'+
+          drivers.map(function(d){return '<option value="'+d.id+'">'+d.name+'</option>';}).join("")+'</select>';
+      } else {
+        ctrl='<div class="driverpill"><span class="av">'+initials(driverName(b.driver_id))+'</span>'+driverName(b.driver_id)+'</div>'+
+          (b.status==="done"?'':'<button class="btn ghost" data-unassign="'+b.id+'">Зняти</button>');
+      }
+      return '<div class="bk" data-s="'+b.status+'"><div class="hd"><div><div class="route">'+route(b)+'</div>'+whoHtml(b)+'</div>'+
+        '<div class="badge" data-s="'+b.status+'">'+labels[b.status]+'</div></div>'+metaHtml(b)+
+        '<div class="actions">'+ctrl+'</div></div>';
+    }).join("");
+
+    document.querySelectorAll("#d-list .assign").forEach(function(s){
+      s.onchange=function(){ if(s.value) assign(s.dataset.id, s.value); };
+    });
+    document.querySelectorAll("#d-list [data-unassign]").forEach(function(btn){
+      btn.onclick=function(){ unassign(btn.dataset.unassign); };
+    });
+  }
+
+  function renderDriver(){
+    var list = bookings.slice().sort(function(a,b){return (a.status==="done")-(b.status==="done");});
+    if(!list.length){$("dr-list").innerHTML='<div class="empty">Поки немає призначених поїздок</div>';return;}
+    $("dr-list").innerHTML = list.map(function(b){
+      var act;
+      if(b.status==="assigned") act='<button class="btn amber" data-go="'+b.id+'">Почати поїздку →</button>';
+      else if(b.status==="enroute") act='<button class="btn dark" data-fin="'+b.id+'">Завершити ✓</button>';
+      else act='<span class="done-tag">✓ Виконано</span>';
+      return '<div class="bk" data-s="'+b.status+'"><div class="hd"><div><div class="route">'+route(b)+'</div>'+whoHtml(b)+'</div>'+
+        '<div class="badge" data-s="'+b.status+'">'+labels[b.status]+'</div></div>'+metaHtml(b)+
+        '<div class="actions" style="justify-content:flex-end">'+act+'</div></div>';
+    }).join("");
+    document.querySelectorAll("#dr-list [data-go]").forEach(function(x){x.onclick=function(){setStatus(x.dataset.go,"enroute");};});
+    document.querySelectorAll("#dr-list [data-fin]").forEach(function(x){x.onclick=function(){setStatus(x.dataset.fin,"done");};});
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
